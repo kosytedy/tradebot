@@ -27,8 +27,8 @@ public class Api {
 
     private static final String ALGORITHM_HMACSHA384 = "HmacSHA384";
 
-    private static String apiKey = "";
-    private static String apiKeySecret = "";
+    private static String apiKey = "xxxxxxxxxxxxxxxxxx";
+    private static String apiKeySecret = "xxxxxxxxxxxxxxx";
     private static long nonce = System.currentTimeMillis();
 
     /**

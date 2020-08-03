@@ -14,7 +14,14 @@ public class Trade {
 	
 	static double lastOpPrice = 100;
 	
-	public static void makeTrade() throws IOException {
+	public static void main(String[] args) throws InterruptedException, IOException {
+		while(true) {
+			attemptToMakeTrade();
+			Thread.sleep(1000);
+		}
+	}
+	
+	public static void attemptToMakeTrade() throws IOException {
 		double currentPrice = Api.getMarketPrice();
 		double percentageDiff = (currentPrice - lastOpPrice)/lastOpPrice*100;
 		if(isNextOperationToBuy) {
