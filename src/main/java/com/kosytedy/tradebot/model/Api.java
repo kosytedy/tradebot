@@ -1,9 +1,5 @@
 package com.kosytedy.tradebot.model;
 
-//import android.util.Base64;
-//import android.util.Log;
-//import java.util.Base64;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
