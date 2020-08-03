@@ -32,7 +32,7 @@ public class Trade {
 	}
 	
 	private static void sell(double percentageDiff) throws IOException {
-		if(percentageDiff >= UPWARD_TREND_THRESHOLD || percentageDiff <= DIP_THRESHOLD) {
+		if(percentageDiff >= PROFIT_THRESHOLD || percentageDiff <= STOP_LOSS_THRESHOLD) {
 			lastOpPrice = Api.placeSellOrder();
 			isNextOperationToBuy = true;
 		}
