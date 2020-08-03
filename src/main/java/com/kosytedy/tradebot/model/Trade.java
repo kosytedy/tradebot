@@ -1,5 +1,6 @@
 package com.kosytedy.tradebot.model;
- 
+
+import java.io.IOException;
 
 public class Trade {
 	
@@ -13,12 +14,12 @@ public class Trade {
 	
 	static double lastOpPrice = 100;
 	
-	public static void makeTrade() {
+	public static void makeTrade() throws IOException {
 		double currentPrice = Api.getMarketPrice();
 		double percentageDiff = (currentPrice - lastOpPrice)/lastOpPrice*100;
 		if(isNextOperationToBuy) {
 			buy(percentageDiff);
-		}else {
+		} else {
 			sell(percentageDiff);
 		}
 	}
