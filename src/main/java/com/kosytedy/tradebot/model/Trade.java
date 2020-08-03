@@ -24,14 +24,14 @@ public class Trade {
 		}
 	}
 	
-	private static void sell(double percentageDiff) {
+	private static void sell(double percentageDiff) throws IOException {
 		if(percentageDiff >= UPWARD_TREND_THRESHOLD || percentageDiff <= DIP_THRESHOLD) {
 			lastOpPrice = Api.placeSellOrder();
 			isNextOperationToBuy = true;
 		}
 	}
 	
-	private static void buy(double percentageDiff) {
+	private static void buy(double percentageDiff) throws IOException {
 		if(percentageDiff >= UPWARD_TREND_THRESHOLD || percentageDiff <= DIP_THRESHOLD) {
 			lastOpPrice = Api.placeBuyOrder();
 			isNextOperationToBuy = false;

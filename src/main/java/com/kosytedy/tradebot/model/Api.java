@@ -60,13 +60,13 @@ public class Api {
      * @return Response string if request successful
      * @throws IOException
      */
-    public static String sendRequest(String urlPath) throws IOException {
+    public static String sendRequest(String urlPath, String payload, String method) throws IOException {
         String sResponse;
 
         HttpURLConnection conn = null;
 
         // String method = "GET";
-        String method = "POST";
+        //String method = "POST";
 
         try {
             URL url = new URL("https://api.bitfinex.com/v1/" + urlPath);
@@ -81,13 +81,6 @@ public class Api {
 
             conn.setDoOutput(true);
             conn.setDoInput(true);
-
-            JSONObject jo = new JSONObject();
-            jo.put("request", urlPath);
-            jo.put("nonce", Long.toString(getNonce()));
-
-            // API v1
-            String payload = jo.toString();
 
             String payload_base64 = Base64.getEncoder().encodeToString(payload.getBytes());
             
@@ -196,25 +189,69 @@ public class Api {
      * @throws IOException
      */
 	public double getBalance() throws IOException {
-		String response = sendRequest("/balances");
+
+		String urlPath = "/balances";
+        JSONObject jo = new JSONObject();
+        jo.put("request", urlPath);
+        jo.put("nonce", Long.toString(getNonce()));
+
+        String payload = jo.toString();
+
+		String response = sendRequest(urlPath, payload, "POST");
 		JSONObject obj = new JSONObject(response);
 		return obj.getJSONObject("").getDouble("available");
 	}
 	
 	public static double getMarketPrice() throws IOException {
-		String response = sendRequest("pubticker/btcusd");
+		
+		String urlPath = "/pubticker/btcusd";
+        JSONObject jo = new JSONObject();
+        jo.put("request", urlPath);
+        jo.put("nonce", Long.toString(getNonce()));
+
+        String payload = jo.toString();
+
+		String response = sendRequest(urlPath, payload, "GET");
 		JSONObject obj = new JSONObject(response);
 		return obj.getDouble("last_price");
 	}
 	
-	public static double placeSellOrder() {
-		
-		return 0;
+	public static double placeSellOrder() throws IOException {
+		String urlPath = "/order/new";
+        JSONObject jo = new JSONObject();
+        jo.put("request", urlPath);
+        jo.put("nonce", Long.toString(getNonce()));
+        jo.put("symbol", "BTCUSD");
+        jo.put("amount", 0.3);
+        jo.put("price", 1000);
+        jo.put("exchange", "bitfinex");
+        jo.put("side", "sell");
+        jo.put("type", "exchange market");
+
+        String payload = jo.toString();
+
+		String response = sendRequest(urlPath, payload, "POST");
+		JSONObject obj = new JSONObject(response);
+		return obj.getDouble("price");
 	}
 	
-	public static double placeBuyOrder() {
-		
-		return 0;
+	public static double placeBuyOrder() throws IOException {
+		String urlPath = "/order/new";
+        JSONObject jo = new JSONObject();
+        jo.put("request", urlPath);
+        jo.put("nonce", Long.toString(getNonce()));
+        jo.put("symbol", "BTCUSD");
+        jo.put("amount", 0.3);
+        jo.put("price", 1000);
+        jo.put("exchange", "bitfinex");
+        jo.put("side", "buy");
+        jo.put("type", "exchange market");
+
+        String payload = jo.toString();
+
+		String response = sendRequest(urlPath, payload, "POST");
+		JSONObject obj = new JSONObject(response);
+		return obj.getDouble("price");
 	}
 	
 	public static double getOperationDetailsss() {
