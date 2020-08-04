@@ -25,8 +25,9 @@ public class Api {
 	
 	private static final String ALGORITHM_HMACSHA384 = "HmacSHA384";
 
-    private static String apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxx";
-    private static String apiKeySecret = "xxxxxxxxxxxxxxxxxxxxxxx";
+	//Enter your Bitfinex API Keys below (https://www.bitfinex.com/api#my-keys)
+    private static String apiKey = "xxxxxxxxxxxx";
+    private static String apiKeySecret = "xxxxxxxxxx";
     private static long nonce = System.currentTimeMillis();
     
     public static final String BASE_PATH = "https://api.bitfinex.com";
@@ -279,10 +280,5 @@ public class Api {
 			System.out.println("Error placing BUY order: " + e.getMessage());
 			return getMarketPrice();
 		}
-	}
-	
-	public static double getOperationDetailsss() {
-		
-		return 0;
 	}
 }

@@ -31,7 +31,7 @@ public class Trade {
 	
 	public static void attemptToMakeTrade() throws IOException {
 		double currentPrice = Api.getMarketPrice();
-		//System.out.println(currentPrice);
+		
 		double percentageDiff = (currentPrice - lastOpPrice) / lastOpPrice * 100;
 		if(isNextOperationToBuy) {
 			buy(currentPrice, percentageDiff);
