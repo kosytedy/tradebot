@@ -23,13 +23,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class Api {
 	
-	private static final String TAG = Api.class.getSimpleName();
+	private static final String ALGORITHM_HMACSHA384 = "HmacSHA384";
 
-    private static final String ALGORITHM_HMACSHA384 = "HmacSHA384";
-
-    private static String apiKey = "xxxxxxxxxxxxxxxxxx";
-    private static String apiKeySecret = "xxxxxxxxxxxxxxx";
+    private static String apiKey = "xxxxxxxxxxxxxxxxxxxxxxxxx";
+    private static String apiKeySecret = "xxxxxxxxxxxxxxxxxxxxxxx";
     private static long nonce = System.currentTimeMillis();
+    
+    public static final String BASE_PATH = "https://api.bitfinex.com";
+    public static double tradeAmount = 0.01;
 
     /**
      * public access only
@@ -46,8 +47,8 @@ public class Api {
      * @param apiKeySecret
      */
     public Api(String apiKey, String apiKeySecret) {
-        this.apiKey = apiKey;
-        this.apiKeySecret = apiKeySecret;
+        Api.apiKey = apiKey;
+        Api.apiKeySecret = apiKeySecret;
     }
     
     /**
@@ -61,17 +62,14 @@ public class Api {
 
         HttpURLConnection conn = null;
 
-        // String method = "GET";
-        //String method = "POST";
-
         try {
-            URL url = new URL("https://api.bitfinex.com/v1/" + urlPath);
+            URL url = new URL(BASE_PATH + urlPath);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod(method);
 
             if (isAccessPublicOnly()) {
                 String msg = "Authenticated access not possible, because key and secret was not initialized: use right constructor.";
-                //Log.e(TAG, msg);
+                System.out.println(msg);
                 return msg;
             }
 
@@ -104,11 +102,11 @@ public class Api {
                 try {
                     sResponse = convertStreamToString(conn.getErrorStream());
                     errMsg += " -> " + sResponse;
-                    //Log.e(TAG, errMsg, e);
+                    System.out.println(errMsg);
                     return sResponse;
                 } catch (IOException e1) {
                     errMsg += " Error on reading error-stream. -> " + e1.getLocalizedMessage();
-                    //Log.e(TAG, errMsg, e);
+                    System.out.println(errMsg);
                     throw new IOException(e.getClass().getName(), e1);
                 }
             } else {
@@ -170,11 +168,11 @@ public class Api {
             }
             digest = hash.toString();
         } catch (UnsupportedEncodingException e) {
-            //Log.e(TAG, "Exception: " + e.getMessage());
+        	System.out.println(e.getMessage());
         } catch (InvalidKeyException e) {
-            //Log.e(TAG, "Exception: " + e.getMessage());
+        	System.out.println(e.getMessage());
         } catch (NoSuchAlgorithmException e) {
-            //Log.e(TAG, "Exception: " + e.getMessage());
+        	System.out.println(e.getMessage());
         }
         return digest;
     }
@@ -184,70 +182,103 @@ public class Api {
      * @return
      * @throws IOException
      */
-	public double getBalance() throws IOException {
+	public static double getBalance() throws IOException {
+		try {
+			String urlPath = "/v1/balances";
+	        JSONObject jo = new JSONObject();
+	        jo.put("request", urlPath);
+	        jo.put("nonce", Long.toString(getNonce()));
 
-		String urlPath = "/balances";
-        JSONObject jo = new JSONObject();
-        jo.put("request", urlPath);
-        jo.put("nonce", Long.toString(getNonce()));
+	        String payload = jo.toString();
 
-        String payload = jo.toString();
-
-		String response = sendRequest(urlPath, payload, "POST");
-		JSONObject obj = new JSONObject(response);
-		return obj.getJSONObject("").getDouble("available");
+			String response = sendRequest(urlPath, payload, "POST");
+			JSONObject obj = new JSONObject(response); 
+			
+			return obj.getJSONObject("0").getDouble("available");
+		} catch(Exception e) {
+			System.out.println("Error getting account balance: " + e.getMessage());
+			return 0;
+		}
+		
 	}
 	
 	public static double getMarketPrice() throws IOException {
+		try {
+			String urlPath = "/v1/pubticker/btcusd";
+	        JSONObject jo = new JSONObject();
+	        jo.put("request", urlPath);
+	        jo.put("nonce", Long.toString(getNonce()));
+
+	        String payload = jo.toString();
+
+			String response = sendRequest(urlPath, payload, "GET");
+			JSONObject obj = new JSONObject(response);
+			return obj.getDouble("last_price");
+		} catch(Exception e) {
+			System.out.println("Error getting current market price: " + e.getMessage());
+			return 0;
+		}
 		
-		String urlPath = "/pubticker/btcusd";
-        JSONObject jo = new JSONObject();
-        jo.put("request", urlPath);
-        jo.put("nonce", Long.toString(getNonce()));
-
-        String payload = jo.toString();
-
-		String response = sendRequest(urlPath, payload, "GET");
-		JSONObject obj = new JSONObject(response);
-		return obj.getDouble("last_price");
 	}
 	
-	public static double placeSellOrder() throws IOException {
-		String urlPath = "/order/new";
-        JSONObject jo = new JSONObject();
-        jo.put("request", urlPath);
-        jo.put("nonce", Long.toString(getNonce()));
-        jo.put("symbol", "BTCUSD");
-        jo.put("amount", 0.3);
-        jo.put("price", 1000);
-        jo.put("exchange", "bitfinex");
-        jo.put("side", "sell");
-        jo.put("type", "exchange market");
+	public static double placeSellOrder(double currentPrice) throws IOException {
+		try {
+			double tradeCost = currentPrice * tradeAmount;
+			
+			if(getBalance() < tradeCost) {
+				throw new Exception("Insuffient balance to perform trade.");
+			}
+			
+			String urlPath = "/v1/order/new";
+	        JSONObject jo = new JSONObject();
+	        jo.put("request", urlPath);
+	        jo.put("nonce", Long.toString(getNonce()));
+	        jo.put("symbol", "BTCUSD");
+	        jo.put("amount", String.valueOf(tradeAmount));
+	        jo.put("price", String.valueOf(tradeCost));
+	        jo.put("exchange", "bitfinex");
+	        jo.put("side", "sell");
+	        jo.put("type", "exchange market");
 
-        String payload = jo.toString();
-
-		String response = sendRequest(urlPath, payload, "POST");
-		JSONObject obj = new JSONObject(response);
-		return obj.getDouble("price");
+	        String payload = jo.toString();
+	        
+			String response = sendRequest(urlPath, payload, "POST");
+			JSONObject obj = new JSONObject(response);
+			return obj.getDouble("price");
+		} catch(Exception e) {
+			System.out.println("Error placing SELL order: " + e.getMessage());
+			return getMarketPrice();
+		}
 	}
 	
-	public static double placeBuyOrder() throws IOException {
-		String urlPath = "/order/new";
-        JSONObject jo = new JSONObject();
-        jo.put("request", urlPath);
-        jo.put("nonce", Long.toString(getNonce()));
-        jo.put("symbol", "BTCUSD");
-        jo.put("amount", 0.3);
-        jo.put("price", 1000);
-        jo.put("exchange", "bitfinex");
-        jo.put("side", "buy");
-        jo.put("type", "exchange market");
+	public static double placeBuyOrder(double currentPrice) throws IOException {
+		try {
+			double tradeCost = currentPrice * tradeAmount;
+			
+			if(getBalance() < tradeCost) {
+				throw new Exception("Insuffient balance to perform trade.");
+			}
+			
+			String urlPath = "/v1/order/new";
+	        JSONObject jo = new JSONObject();
+	        jo.put("request", urlPath);
+	        jo.put("nonce", Long.toString(getNonce()));
+	        jo.put("symbol", "BTCUSD");
+	        jo.put("amount", String.valueOf(tradeAmount));
+	        jo.put("price", String.valueOf(tradeCost));
+	        jo.put("exchange", "bitfinex");
+	        jo.put("side", "buy");
+	        jo.put("type", "exchange market");
 
-        String payload = jo.toString();
-
-		String response = sendRequest(urlPath, payload, "POST");
-		JSONObject obj = new JSONObject(response);
-		return obj.getDouble("price");
+	        String payload = jo.toString();
+	        
+			String response = sendRequest(urlPath, payload, "POST");
+			JSONObject obj = new JSONObject(response);
+			return obj.getDouble("price");
+		} catch(Exception e) {
+			System.out.println("Error placing BUY order: " + e.getMessage());
+			return getMarketPrice();
+		}
 	}
 	
 	public static double getOperationDetailsss() {

@@ -6,42 +6,59 @@ public class Trade {
 	
 	static boolean isNextOperationToBuy = true;
 	
+	static int TRADE_INTERVAL_IN_SECONDS = 30;
+	
 	static double UPWARD_TREND_THRESHOLD = 2.25;
 	static double DIP_THRESHOLD = 2.25;
 	
-	static double PROFIT_THRESHOLD = 1.25;
+	static double PROFIT_THRESHOLD = 2.25;
 	static double STOP_LOSS_THRESHOLD = -2.00;
 	
-	static double lastOpPrice = 100;
+	static double lastOpPrice = 11249.0;
+	
+	
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
+		lastOpPrice = Api.getMarketPrice();
+		int tradeCount = 1;
 		while(true) {
+			System.out.println("Attempting to make trade no. "+tradeCount);
 			attemptToMakeTrade();
-			Thread.sleep(1000);
+			Thread.sleep(TRADE_INTERVAL_IN_SECONDS * 1000);
+			tradeCount++;
 		}
 	}
 	
 	public static void attemptToMakeTrade() throws IOException {
 		double currentPrice = Api.getMarketPrice();
-		double percentageDiff = (currentPrice - lastOpPrice)/lastOpPrice*100;
+		//System.out.println(currentPrice);
+		double percentageDiff = (currentPrice - lastOpPrice) / lastOpPrice * 100;
 		if(isNextOperationToBuy) {
-			buy(percentageDiff);
+			buy(currentPrice, percentageDiff);
 		} else {
-			sell(percentageDiff);
+			sell(currentPrice, percentageDiff);
 		}
 	}
 	
-	private static void sell(double percentageDiff) throws IOException {
+	private static void sell(double currentPrice, double percentageDiff) throws IOException {
 		if(percentageDiff >= PROFIT_THRESHOLD || percentageDiff <= STOP_LOSS_THRESHOLD) {
-			lastOpPrice = Api.placeSellOrder();
-			isNextOperationToBuy = true;
+			try {
+				lastOpPrice = Api.placeSellOrder(currentPrice);
+				isNextOperationToBuy = true;
+			} catch(Exception e) {
+				System.out.println(e.getMessage());
+			}
 		}
 	}
 	
-	private static void buy(double percentageDiff) throws IOException {
+	private static void buy(double currentPrice, double percentageDiff) throws IOException {
 		if(percentageDiff >= UPWARD_TREND_THRESHOLD || percentageDiff <= DIP_THRESHOLD) {
-			lastOpPrice = Api.placeBuyOrder();
-			isNextOperationToBuy = false;
+			try {
+				lastOpPrice = Api.placeBuyOrder(currentPrice);
+				isNextOperationToBuy = false;
+			} catch(Exception e) {
+				System.out.println(e.getMessage());
+			}
 		}
 	}
 }
