@@ -28,6 +28,7 @@ public class Api {
 	//Enter your Bitfinex API Keys below (https://www.bitfinex.com/api#my-keys)
     private static String apiKey = "xxxxxxxxxxxx";
     private static String apiKeySecret = "xxxxxxxxxx";
+    
     private static long nonce = System.currentTimeMillis();
     
     public static final String BASE_PATH = "https://api.bitfinex.com";
