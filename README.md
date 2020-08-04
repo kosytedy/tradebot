@@ -1,5 +1,5 @@
 # tradebot
-This is a trading bot designed to make some profit in the crypto market (specifically the BTC/USD pair) by utilizing some basic trading principals like "Buy low, sell high", 
+This is a trading bot designed to make some profit in the crypto market (specifically the BTC/USD pair) by utilizing some basic trading principles like "Buy low, sell high", 
 and also tries to stop loss or buy when the market moves upward enough to spark a trend, nothing too fancy.
 The crypto exchange used for this program is BitFinex (https://www.bitfinex.com/)
 
